@@ -1,0 +1,33 @@
+version: '3.6'
+
+services: 
+
+ postgres:
+  image: postgres:alpine
+  ports:
+   - "5432:5432"
+  environment:
+   - POSTGRES_PASSWORD=password
+   - POSTGRES_USER=user
+   - POSTGRES_DB=dilemmasask_db
+  
+ server:
+  build: .
+  ports:
+   - "8080:8080"
+  environment:
+   - JDBC_DATABASE_URL=jdbc:postgresql://postgres:5432/dilemmasask_db
+   - JDBC_DATABASE_PASSWORD=password
+   - JDBC_DATABASE_USERNAME=user
+  links:
+   - postgres
+
+ server-local:
+  build: .
+  ports:
+   - "8080:8080"
+  environment:
+   - JDBC_DATABASE_URL=jdbc:postgresql://localhost:5432/dilemmasask_db
+   - JDBC_DATABASE_PASSWORD=password
+   - JDBC_DATABASE_USERNAME=user
+  network_mode: "host"
