@@ -14,7 +14,7 @@ services:
  server:
   build: .
   ports:
-   - "8080:8080"
+   - "8081:8080"
   environment:
    - JDBC_DATABASE_URL=jdbc:postgresql://postgres:5432/dilemmasask_db
    - JDBC_DATABASE_PASSWORD=password
@@ -25,7 +25,7 @@ services:
  server-local:
   build: .
   ports:
-   - "8080:8080"
+   - "8081:8080"
   environment:
    - JDBC_DATABASE_URL=jdbc:postgresql://localhost:5432/dilemmasask_db
    - JDBC_DATABASE_PASSWORD=password
