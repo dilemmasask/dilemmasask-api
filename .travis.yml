@@ -1,0 +1,15 @@
+services:
+  - docker
+
+language: java
+jdk: openjdk8
+
+branches:
+  only:
+    - master
+    - develop
+
+deploy:
+  provider: heroku
+  api_key: ${HEROKU_API_KEY}
+  app: dilemmasask-api
