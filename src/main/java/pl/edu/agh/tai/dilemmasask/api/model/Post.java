@@ -2,6 +2,8 @@ package pl.edu.agh.tai.dilemmasask.api.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Post {
@@ -17,6 +19,9 @@ public class Post {
     @Embedded
     private Poll poll;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<Comment> comments = new HashSet<>();
+
     public Post() {}
 
     public Post(LocalDateTime dateTime, User author, Poll poll) {
@@ -27,10 +32,6 @@ public class Post {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public User getAuthor() {
