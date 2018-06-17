@@ -18,8 +18,8 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(LocalDateTime dateTime, User author, String text) {
-        this.dateTime = dateTime;
+    public Comment(User author, String text) {
+        this.dateTime = LocalDateTime.now();
         this.author = author;
         this.text = text;
     }

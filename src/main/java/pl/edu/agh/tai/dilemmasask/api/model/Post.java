@@ -24,8 +24,8 @@ public class Post {
 
     public Post() {}
 
-    public Post(LocalDateTime dateTime, User author, Poll poll) {
-        this.dateTime = dateTime;
+    public Post(User author, Poll poll) {
+        this.dateTime = LocalDateTime.now();
         this.author = author;
         this.poll = poll;
     }
@@ -56,5 +56,17 @@ public class Post {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public void addComment(Comment comment){
+        this.comments.add(comment);
     }
 }
