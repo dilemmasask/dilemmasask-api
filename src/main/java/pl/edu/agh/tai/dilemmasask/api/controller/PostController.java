@@ -8,6 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.agh.tai.dilemmasask.api.DTO.NotVotedPostDTO;
+import pl.edu.agh.tai.dilemmasask.api.DTO.PostsListDTO;
 import pl.edu.agh.tai.dilemmasask.api.DTO.VotedPostDTO;
 import pl.edu.agh.tai.dilemmasask.api.model.*;
 import pl.edu.agh.tai.dilemmasask.api.repository.*;
@@ -57,10 +59,12 @@ public class PostController {
                 posts = getSortedPosts(pageNumber, dateFrom, dateTo, pollsPerPage, tag, "totalVotes");
                 break;
             default:
-                posts = getRandomPosts(pageNumber, pollsPerPage);
-
+                posts = getRandomPosts(pageNumber, pollsPerPage, tag);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(posts.getContent());
+        PostsListDTO postsListDTO = new PostsListDTO();
+        posts.getContent().forEach(post -> postsListDTO.addPost(modelMapper.map(post, NotVotedPostDTO.class)));
+
+        return ResponseEntity.status(HttpStatus.OK).body(postsListDTO);
     }
 
     private Page<Post> getSortedPosts(Integer pageNumber, String from, String to, Integer pollsPerPage, String tag, String sortBy) {
@@ -72,8 +76,9 @@ public class PostController {
         return postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable);
     }
 
-    private Page<Post> getRandomPosts(Integer pageNumber, Integer pollsPerPage) {
-        return null;
+    private Page<Post> getRandomPosts(Integer pageNumber, Integer pollsPerPage, String tag) {
+        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage);
+        return  postRepository.findByTagsName(tag, pageable);
     }
 
     @GetMapping("/{postId}")
@@ -106,8 +111,7 @@ public class PostController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
-
-    @GetMapping("/{postId}/comments")
+    @GetMapping("/posts/{postId}/comments")
     private ResponseEntity getComments(@PathVariable Long postId){
         Post post = postRepository.findById(postId).orElse(null);
         if(post!=null){
@@ -116,7 +120,7 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    @PostMapping("/{postId}/comments")
+    @PostMapping("/posts/{postId}/comments")
     private ResponseEntity postComment(@PathVariable Long postId, @RequestBody String text){
         Post post = postRepository.findById(postId).orElse(null);
         if(post!=null){
@@ -127,12 +131,4 @@ public class PostController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
-
-    @DeleteMapping("/{postId}/comments/{commentId}")
-    private ResponseEntity deleteComment(@PathVariable Long postId, @PathVariable Long commentId){
-        //is postId necessary?
-        commentRepository.deleteById(commentId);
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
-
 }

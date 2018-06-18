@@ -11,5 +11,6 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
+    Page<Post> findByTagsName(String tag, Pageable pageable);
     Page<Post> findByTagsNameAndDateTimeBetween(String tag, LocalDateTime from, LocalDateTime to, Pageable pageable);
 }
