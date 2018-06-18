@@ -1,22 +1,16 @@
 package pl.edu.agh.tai.dilemmasask.api.controller;
 
-import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.agh.tai.dilemmasask.api.DTO.NotVotedPostDTO;
 import pl.edu.agh.tai.dilemmasask.api.DTO.VotedPostDTO;
-import pl.edu.agh.tai.dilemmasask.api.model.Comment;
-import pl.edu.agh.tai.dilemmasask.api.model.Post;
-import pl.edu.agh.tai.dilemmasask.api.model.User;
-import pl.edu.agh.tai.dilemmasask.api.repository.AnswerRepository;
-import pl.edu.agh.tai.dilemmasask.api.repository.CommentRepository;
-import pl.edu.agh.tai.dilemmasask.api.repository.PostRepository;
-import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
+import pl.edu.agh.tai.dilemmasask.api.model.*;
+import pl.edu.agh.tai.dilemmasask.api.repository.*;
 
 @RestController
 @RequestMapping("/posts")
@@ -26,18 +20,20 @@ public class PostController {
     private AnswerRepository answerRepository;
     private UserRepository userRepository;
     private CommentRepository commentRepository;
+    private TagsRepository tagsRepository;
     private ModelMapper modelMapper;
 
-    public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository, CommentRepository commentRepository) {
+    public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository, CommentRepository commentRepository, TagsRepository tagsRepository) {
         this.postRepository = postRepository;
         this.answerRepository = answerRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
+        this.tagsRepository = tagsRepository;
         this.modelMapper = new ModelMapper();
     }
 
     @GetMapping
-    private ResponseEntity getNewestPolls(
+    private ResponseEntity getPolls(
             @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
             @RequestParam(value = "per_page", defaultValue = "10") Integer pollsPerPage,
             @RequestParam(value = "sort", defaultValue = "") String sortBy,
@@ -48,10 +44,35 @@ public class PostController {
         if(pageNumber < 1 || pollsPerPage < 1){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+        Page<Post> posts;
+        switch (sortBy){
+            case "new":
+                posts = getNewPosts(pageNumber, dateFrom, dateTo, pollsPerPage, tag);
+                break;
+            case "top":
+                posts = getTopPosts(pageNumber, pollsPerPage, tag);
+                break;
+            default:
+                posts = getRandomPosts(pageNumber, pollsPerPage);
 
-        Page<Post> posts = postRepository.findAll(
-                PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.DESC, "dateTime")));
+        }
         return ResponseEntity.status(HttpStatus.OK).body(posts.getContent());
+    }
+
+    private Page<Post> getNewPosts(Integer pageNumber, String dateFrom, String dateTo, Integer pollsPerPage, String tag) {
+        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.ASC, "dateTime"));
+        Page<Post> posts = postRepository.findByTagsName(tag, pageable);
+        return posts;
+    }
+
+    private Page<Post> getTopPosts(Integer pageNumber, Integer pollsPerPage, String tag) {
+        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.ASC, "totalVotes"));
+        Page<Post> posts = postRepository.findByTagsName(tag, pageable);
+        return posts;
+    }
+
+    private Page<Post> getRandomPosts(Integer pageNumber, Integer pollsPerPage) {
+        return null;
     }
 
     @GetMapping("/{postId}")
@@ -79,7 +100,7 @@ public class PostController {
     private ResponseEntity vote(@PathVariable Long postId, @PathVariable Long answerId){
         Post post = postRepository.findById(postId).orElse(null);
         if (post != null) {
-            post.getPoll().voteAnswer(answerId);
+            post.voteAnswer(answerId);
             return ResponseEntity.status(HttpStatus.OK).body(post);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

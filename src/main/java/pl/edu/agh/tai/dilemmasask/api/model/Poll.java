@@ -11,22 +11,17 @@ public class Poll {
     private List<Answer> answers = new ArrayList<>();
 
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private Set<Tag> tags = new HashSet<>();
+//    @OneToMany
+//    private Set<Tag> tags = new HashSet<>();
 
     public Poll() {
-    }
-
-    public Poll(String question, List<Answer> answers, Set<Tag> tags) {
-        this.question = question;
-        this.answers = answers;
-        this.tags = tags;
     }
 
     public Poll(String question, List<Answer> answers) {
         this.question = question;
         this.answers = answers;
     }
+
 
     public String getQuestion() {
         return question;
@@ -48,11 +43,19 @@ public class Poll {
         this.answers = answers;
     }
 
-    public Set<Tag> getTags() {
-        return tags;
-    }
+//    public Set<Tag> getTags() {
+//        return tags;
+//    }
+//
+//    public void setTags(Set<Tag> tags) {
+//        this.tags = tags;
+//    }
+//
+//    public void addTag(Tag tag){
+//        tags.add(tag);
+//    }
 
-    public void setTags(Set<Tag> tags) {
-        this.tags = tags;
+    public int getTotalVotes(){
+        return answers.stream().mapToInt(Answer::getVotes).sum();
     }
 }

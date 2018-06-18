@@ -22,6 +22,11 @@ public class Post {
     @OneToMany(cascade = CascadeType.ALL)
     private Set<Comment> comments = new HashSet<>();
 
+    private int totalVotes;
+
+    @OneToMany
+    private Set<Tag> tags = new HashSet<>();
+
     public Post() {}
 
     public Post(User author, Poll poll) {
@@ -29,11 +34,17 @@ public class Post {
         this.author = author;
         this.poll = poll;
     }
-
     public Post(LocalDateTime dateTime, User author, Poll poll) {
         this.dateTime = dateTime;
         this.author = author;
         this.poll = poll;
+    }
+
+    public Post(LocalDateTime dateTime, User author, Poll poll, Set<Tag> tags) {
+        this.dateTime = dateTime;
+        this.author = author;
+        this.poll = poll;
+        this.tags = tags;
     }
 
     public Long getId() {
@@ -74,5 +85,22 @@ public class Post {
 
     public void addComment(Comment comment){
         this.comments.add(comment);
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public void voteAnswer(long answerId){
+        poll.voteAnswer(answerId);
+        totalVotes = poll.getTotalVotes();
+    }
+
+    public void addTag(Tag t) {
+        tags.add(t);
     }
 }
