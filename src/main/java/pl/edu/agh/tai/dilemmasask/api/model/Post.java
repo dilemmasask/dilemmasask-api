@@ -95,8 +95,8 @@ public class Post {
         this.tags = tags;
     }
 
-    public void voteAnswer(long answerId){
-        poll.voteAnswer(answerId);
+    public void voteAnswer(User voter, long answerId){
+        poll.voteAnswer(voter, answerId);
         totalVotes = poll.getTotalVotes();
     }
 

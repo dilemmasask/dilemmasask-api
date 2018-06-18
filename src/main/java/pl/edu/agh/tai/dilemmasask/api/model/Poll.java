@@ -22,7 +22,6 @@ public class Poll {
         this.answers = answers;
     }
 
-
     public String getQuestion() {
         return question;
     }
@@ -31,8 +30,8 @@ public class Poll {
         this.question = question;
     }
 
-    public void voteAnswer(long answerId) {
-        answers.stream().filter(a -> a.getId().equals(answerId)).findFirst().ifPresent(Answer::incrementVotes);
+    public void voteAnswer(User voter, long answerId) {
+        answers.stream().filter(a -> a.getId().equals(answerId)).findFirst().ifPresent(answer -> answer.vote(voter));
     }
 
     public List<Answer> getAnswers() {

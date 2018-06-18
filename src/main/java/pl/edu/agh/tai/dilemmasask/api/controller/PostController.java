@@ -85,8 +85,8 @@ public class PostController {
     private ResponseEntity getPost(@PathVariable Long postId){
         Post post = postRepository.findById(postId).orElse(null);
         if(post!=null){
-            VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
-            return ResponseEntity.status(HttpStatus.OK).body(votedPostDTO);
+            NotVotedPostDTO notVotedPostDTO = modelMapper.map(post, NotVotedPostDTO.class);
+            return ResponseEntity.status(HttpStatus.OK).body(notVotedPostDTO);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
@@ -106,7 +106,7 @@ public class PostController {
     private ResponseEntity vote(@PathVariable Long postId, @PathVariable Long answerId){
         Post post = postRepository.findById(postId).orElse(null);
         if (post != null) {
-            post.voteAnswer(answerId);
+            post.voteAnswer(new User(), answerId);
             return ResponseEntity.status(HttpStatus.OK).body(post);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

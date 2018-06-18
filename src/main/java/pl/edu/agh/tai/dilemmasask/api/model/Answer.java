@@ -1,6 +1,8 @@
 package pl.edu.agh.tai.dilemmasask.api.model;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Answer {
@@ -9,6 +11,9 @@ public class Answer {
     private Long id;
     private String text;
     private int votes = 0;
+
+    @ManyToMany(mappedBy = "answers")
+    private Set<User> voters = new HashSet<>();
 
     public Answer() {
     }
@@ -37,7 +42,9 @@ public class Answer {
         this.votes = votes;
     }
 
-    public void incrementVotes() {
-        this.votes++;
+    public void vote(User voter) {
+        voters.add(voter);
+        votes++;
     }
+
 }

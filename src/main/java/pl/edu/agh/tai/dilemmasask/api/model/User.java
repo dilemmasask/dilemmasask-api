@@ -2,6 +2,8 @@ package pl.edu.agh.tai.dilemmasask.api.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "the_user")
@@ -17,6 +19,9 @@ public class User {
     private String principalId;
 
     private LocalDateTime created;
+
+    @ManyToMany
+    private Set<Answer> answers = new HashSet<>();
 
     public User() {
     }
