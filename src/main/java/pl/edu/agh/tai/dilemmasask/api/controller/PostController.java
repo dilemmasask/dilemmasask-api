@@ -1,12 +1,15 @@
 package pl.edu.agh.tai.dilemmasask.api.controller;
 
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.agh.tai.dilemmasask.api.DTO.NotVotedPostDTO;
+import pl.edu.agh.tai.dilemmasask.api.DTO.VotedPostDTO;
 import pl.edu.agh.tai.dilemmasask.api.model.Comment;
 import pl.edu.agh.tai.dilemmasask.api.model.Post;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
@@ -23,11 +26,14 @@ public class PostController {
     private AnswerRepository answerRepository;
     private UserRepository userRepository;
     private CommentRepository commentRepository;
+    private ModelMapper modelMapper;
 
-    public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository) {
+    public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository, CommentRepository commentRepository) {
         this.postRepository = postRepository;
         this.answerRepository = answerRepository;
         this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.modelMapper = new ModelMapper();
     }
 
     @GetMapping
@@ -50,8 +56,12 @@ public class PostController {
 
     @GetMapping("/{postId}")
     private ResponseEntity getPost(@PathVariable Long postId){
-        //TODO: postDTO
-        return null;
+        Post post = postRepository.findById(postId).orElse(null);
+        if(post!=null){
+            VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
+            return ResponseEntity.status(HttpStatus.OK).body(votedPostDTO);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     @PostMapping

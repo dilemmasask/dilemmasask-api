@@ -30,6 +30,12 @@ public class Post {
         this.poll = poll;
     }
 
+    public Post(LocalDateTime dateTime, User author, Poll poll) {
+        this.dateTime = dateTime;
+        this.author = author;
+        this.poll = poll;
+    }
+
     public Long getId() {
         return id;
     }

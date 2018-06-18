@@ -10,13 +10,14 @@ public class Poll {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Answer> answers = new ArrayList<>();
 
+
     @OneToMany(cascade = CascadeType.ALL)
-    private Set<String> tags = new HashSet<>();
+    private Set<Tag> tags = new HashSet<>();
 
     public Poll() {
     }
 
-    public Poll(String question, List<Answer> answers, Set<String> tags) {
+    public Poll(String question, List<Answer> answers, Set<Tag> tags) {
         this.question = question;
         this.answers = answers;
         this.tags = tags;
@@ -47,11 +48,11 @@ public class Poll {
         this.answers = answers;
     }
 
-    public Set<String> getTags() {
+    public Set<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(Set<String> tags) {
+    public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
 }
