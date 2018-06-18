@@ -1,10 +1,10 @@
 package pl.edu.agh.tai.dilemmasask.api.DTO;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PostsListDTO {
-    List<PostDTO> posts = new LinkedList<>();
+    List<PostDTO> posts = new ArrayList<>();
 
     public List<PostDTO> getPosts() {
         return posts;

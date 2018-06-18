@@ -8,9 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.agh.tai.dilemmasask.api.DTO.NotVotedPostDTO;
-import pl.edu.agh.tai.dilemmasask.api.DTO.PostsListDTO;
-import pl.edu.agh.tai.dilemmasask.api.DTO.VotedPostDTO;
+import pl.edu.agh.tai.dilemmasask.api.DTO.*;
 import pl.edu.agh.tai.dilemmasask.api.model.*;
 import pl.edu.agh.tai.dilemmasask.api.repository.*;
 
@@ -28,6 +26,7 @@ public class PostController {
     private TagsRepository tagsRepository;
     private final ModelMapper modelMapper;
     private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final static User mockUser = new User("mock");
 
     public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository, CommentRepository commentRepository, TagsRepository tagsRepository) {
         this.postRepository = postRepository;
@@ -62,9 +61,18 @@ public class PostController {
                 posts = getRandomPosts(pageNumber, pollsPerPage, tag);
         }
         PostsListDTO postsListDTO = new PostsListDTO();
-        posts.getContent().forEach(post -> postsListDTO.addPost(modelMapper.map(post, NotVotedPostDTO.class)));
+
+        posts.getContent().forEach(post -> postsListDTO.addPost(getProperPost(post, mockUser)));
 
         return ResponseEntity.status(HttpStatus.OK).body(postsListDTO);
+    }
+
+    private PostDTO getProperPost(Post post, User user) {
+        if(userVotedForPost(post, user)){
+            return modelMapper.map(post, VotedPostDTO.class);
+        } else {
+            return modelMapper.map(post, NotVotedPostDTO.class);
+        }
     }
 
     private Page<Post> getSortedPosts(Integer pageNumber, String from, String to, Integer pollsPerPage, String tag, String sortBy) {
@@ -78,57 +86,114 @@ public class PostController {
 
     private Page<Post> getRandomPosts(Integer pageNumber, Integer pollsPerPage, String tag) {
         Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage);
-        return  postRepository.findByTagsName(tag, pageable);
+        return postRepository.findByTagsName(tag, pageable);
     }
 
     @GetMapping("/{postId}")
     private ResponseEntity getPost(@PathVariable Long postId){
         Post post = postRepository.findById(postId).orElse(null);
-        if(post!=null){
-            NotVotedPostDTO notVotedPostDTO = modelMapper.map(post, NotVotedPostDTO.class);
-            return ResponseEntity.status(HttpStatus.OK).body(notVotedPostDTO);
+        if(post==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        PostDTO postDTO;
+        if(userVotedForPost(post, mockUser)){
+            postDTO = modelMapper.map(post, VotedPostDTO.class);
+        } else {
+            postDTO = modelMapper.map(post, NotVotedPostDTO.class);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(postDTO);
+
     }
 
     @PostMapping
-    private Post addNewPost(@RequestBody Post post){
-        return postRepository.save(post);
+    private ResponseEntity addNewPost(@RequestBody Post post){
+        //TODO
+        postRepository.save(post);
+        return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(post, NotVotedPostDTO.class));
     }
 
     @DeleteMapping("/{postId}")
     private ResponseEntity deletePost(@PathVariable Long postId){
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if(!userIsAllowedToDeletePost(post, mockUser)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         postRepository.deleteById(postId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    private boolean userIsAllowedToDeletePost(Post post, User user) {
+        return post.getAuthor().equals(user);
     }
 
     @PutMapping("/{postId}/vote/{answerId}")
     private ResponseEntity vote(@PathVariable Long postId, @PathVariable Long answerId){
         Post post = postRepository.findById(postId).orElse(null);
-        if (post != null) {
-            post.voteAnswer(new User(), answerId);
-            return ResponseEntity.status(HttpStatus.OK).body(post);
+        if (post == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    }
-    @GetMapping("/posts/{postId}/comments")
-    private ResponseEntity getComments(@PathVariable Long postId){
-        Post post = postRepository.findById(postId).orElse(null);
-        if(post!=null){
-            return ResponseEntity.status(HttpStatus.OK).body(post.getComments());
+        HttpStatus httpStatus = HttpStatus.FORBIDDEN;
+
+        if(userVotedForPost(post, mockUser)){
+            answerId = getVotedAnswerId(post, mockUser);
+        } else{
+            post.voteAnswer(mockUser, answerId);
+            httpStatus = HttpStatus.OK;
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
+        votedPostDTO.setVotedAnswerId(answerId);
+        return ResponseEntity.status(httpStatus).body(votedPostDTO);
+
     }
 
-    @PostMapping("/posts/{postId}/comments")
+    private boolean userVotedForPost(Post post, User user) {
+        return post.getPoll().getAnswers().stream().anyMatch(a -> a.getVoters().contains(user));
+    }
+
+    private Long getVotedAnswerId(Post post, User user) {
+        return post.getPoll().getAnswers().stream().filter(answer -> answer.getVoters().contains(user)).findFirst().get().getId();
+    }
+
+    @GetMapping("/{postId}/comments")
+    private ResponseEntity getComments(@PathVariable Long postId){
+        Post post = postRepository.findById(postId).orElse(null);
+        if(post==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if(!isPostVoted(post, mockUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
+    }
+
+    @PostMapping("/{postId}/comments")
     private ResponseEntity postComment(@PathVariable Long postId, @RequestBody String text){
         Post post = postRepository.findById(postId).orElse(null);
-        if(post!=null){
-            Comment comment = new Comment(new User(), text);
-            commentRepository.save(comment);
-            post.addComment(comment);
-            return ResponseEntity.status(HttpStatus.OK).body(post.getComments());
+        if(post==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        if(!isPostVoted(post, mockUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        Comment comment = new Comment(mockUser, text);
+        commentRepository.save(comment);
+        post.addComment(comment);
+        return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
+    }
+
+    private CommentsListDTO getCommentsFromPost(Post post){
+        CommentsListDTO commentsListDTO = new CommentsListDTO();
+        post.getComments().forEach(comment -> commentsListDTO.addComment(modelMapper.map(comment, CommentDTO.class)));
+        return commentsListDTO;
+    }
+
+    private boolean isPostVoted(Post post, User user) {
+        //TODO
+        return false;
     }
 }

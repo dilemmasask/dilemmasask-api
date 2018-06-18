@@ -21,4 +21,8 @@ public class VotedPostDTO extends PostDTO{
     public void setComments(List<CommentDTO> comments) {
         this.comments = comments;
     }
+
+    public void setVotedAnswerId(Long answerId){
+        poll.setVotedAnswerId(answerId);
+    }
 }

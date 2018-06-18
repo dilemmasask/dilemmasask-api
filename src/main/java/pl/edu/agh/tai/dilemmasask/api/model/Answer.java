@@ -47,4 +47,11 @@ public class Answer {
         votes++;
     }
 
+    public Set<User> getVoters() {
+        return voters;
+    }
+
+    public void setVoters(Set<User> voters) {
+        this.voters = voters;
+    }
 }
