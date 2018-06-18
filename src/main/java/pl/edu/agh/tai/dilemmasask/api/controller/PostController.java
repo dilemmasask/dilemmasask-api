@@ -12,6 +12,9 @@ import pl.edu.agh.tai.dilemmasask.api.DTO.VotedPostDTO;
 import pl.edu.agh.tai.dilemmasask.api.model.*;
 import pl.edu.agh.tai.dilemmasask.api.repository.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @RestController
 @RequestMapping("/posts")
 public class PostController {
@@ -21,7 +24,8 @@ public class PostController {
     private UserRepository userRepository;
     private CommentRepository commentRepository;
     private TagsRepository tagsRepository;
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
+    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository, CommentRepository commentRepository, TagsRepository tagsRepository) {
         this.postRepository = postRepository;
@@ -36,7 +40,7 @@ public class PostController {
     private ResponseEntity getPolls(
             @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
             @RequestParam(value = "per_page", defaultValue = "10") Integer pollsPerPage,
-            @RequestParam(value = "sort", defaultValue = "") String sortBy,
+            @RequestParam(value = "sort", defaultValue = "new") String sortBy,
             @RequestParam(value = "from", required = false) String dateFrom,
             @RequestParam(value = "to", required = false) String dateTo,
             @RequestParam(value = "tag", required = false) String tag) {
@@ -47,10 +51,10 @@ public class PostController {
         Page<Post> posts;
         switch (sortBy){
             case "new":
-                posts = getNewPosts(pageNumber, dateFrom, dateTo, pollsPerPage, tag);
+                posts = getSortedPosts(pageNumber, dateFrom, dateTo, pollsPerPage, tag, "dateTime");
                 break;
             case "top":
-                posts = getTopPosts(pageNumber, pollsPerPage, tag);
+                posts = getSortedPosts(pageNumber, dateFrom, dateTo, pollsPerPage, tag, "totalVotes");
                 break;
             default:
                 posts = getRandomPosts(pageNumber, pollsPerPage);
@@ -59,16 +63,13 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(posts.getContent());
     }
 
-    private Page<Post> getNewPosts(Integer pageNumber, String dateFrom, String dateTo, Integer pollsPerPage, String tag) {
-        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.ASC, "dateTime"));
-        Page<Post> posts = postRepository.findByTagsName(tag, pageable);
-        return posts;
-    }
+    private Page<Post> getSortedPosts(Integer pageNumber, String from, String to, Integer pollsPerPage, String tag, String sortBy) {
 
-    private Page<Post> getTopPosts(Integer pageNumber, Integer pollsPerPage, String tag) {
-        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.ASC, "totalVotes"));
-        Page<Post> posts = postRepository.findByTagsName(tag, pageable);
-        return posts;
+        LocalDateTime dateFrom = LocalDateTime.parse(from, formatter);
+        LocalDateTime dateTo = LocalDateTime.parse(to, formatter);
+
+        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.DESC, sortBy));
+        return postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable);
     }
 
     private Page<Post> getRandomPosts(Integer pageNumber, Integer pollsPerPage) {
