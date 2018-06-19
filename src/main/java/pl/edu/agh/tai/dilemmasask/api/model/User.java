@@ -20,7 +20,7 @@ public class User {
 
     private LocalDateTime created;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "voters", cascade = CascadeType.ALL)
     private Set<Answer> answers = new HashSet<>();
 
     public User() {
@@ -64,6 +64,10 @@ public class User {
 
     public void setCreated(LocalDateTime created) {
         this.created = created;
+    }
+
+    public void addAnswer(Answer answer) {
+        this.answers.add(answer);
     }
 
     @Override

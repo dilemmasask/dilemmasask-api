@@ -12,7 +12,7 @@ public class Answer {
     private String text;
     private int votes = 0;
 
-    @ManyToMany(mappedBy = "answers")
+    @ManyToMany
     private Set<User> voters = new HashSet<>();
 
     public Answer() {
@@ -44,6 +44,7 @@ public class Answer {
 
     public void vote(User voter) {
         voters.add(voter);
+        voter.addAnswer(this);
         votes++;
     }
 
@@ -53,5 +54,15 @@ public class Answer {
 
     public void setVoters(Set<User> voters) {
         this.voters = voters;
+    }
+
+    @Override
+    public String toString() {
+        return "Answer{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", votes=" + votes +
+                ", voters=" + voters +
+                '}';
     }
 }

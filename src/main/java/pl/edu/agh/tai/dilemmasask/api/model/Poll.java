@@ -57,4 +57,6 @@ public class Poll {
     public int getTotalVotes(){
         return answers.stream().mapToInt(Answer::getVotes).sum();
     }
+
+
 }

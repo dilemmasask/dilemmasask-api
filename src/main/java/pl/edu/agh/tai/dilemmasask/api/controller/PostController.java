@@ -107,8 +107,11 @@ public class PostController {
     }
 
     @PostMapping
-    private ResponseEntity addNewPost(@RequestBody Post post){
-        //TODO
+    private ResponseEntity addNewPost(@RequestBody Poll poll){
+        if(poll.getQuestion()==null || poll.getQuestion().isEmpty() || poll.getAnswers()==null || poll.getAnswers().isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Post post = new Post(mockUser, poll);
         postRepository.save(post);
         return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(post, NotVotedPostDTO.class));
     }
@@ -132,31 +135,38 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/vote/{answerId}")
-    private ResponseEntity vote(@PathVariable Long postId, @PathVariable Long answerId){
+    private ResponseEntity vote(@PathVariable Long postId, @PathVariable final Long answerId){
         Post post = postRepository.findById(postId).orElse(null);
-        if (post == null) {
+        if (post == null || !postContainsAnswer(post, answerId)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        HttpStatus httpStatus = HttpStatus.FORBIDDEN;
-
-        if(userVotedForPost(post, mockUser)){
-            answerId = getVotedAnswerId(post, mockUser);
-        } else{
+        userRepository.save(mockUser);
+        if(!userVotedForPost(post, mockUser)){
             post.voteAnswer(mockUser, answerId);
-            httpStatus = HttpStatus.OK;
+            postRepository.save(post);
         }
-        VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
-        votedPostDTO.setVotedAnswerId(answerId);
-        return ResponseEntity.status(httpStatus).body(votedPostDTO);
 
+        VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
+        votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, mockUser));
+        return ResponseEntity.status(HttpStatus.OK).body(votedPostDTO);
+
+    }
+
+    private boolean postContainsAnswer(Post post, Long answerId) {
+        return post.getPoll().getAnswers().stream().anyMatch(a -> a.getId().equals(answerId));
     }
 
     private boolean userVotedForPost(Post post, User user) {
-        return post.getPoll().getAnswers().stream().anyMatch(a -> a.getVoters().contains(user));
+        return post.getPoll().getAnswers().stream().anyMatch(a -> a.getVoters().stream().anyMatch(v->v.getId().equals(user.getId())));
     }
 
     private Long getVotedAnswerId(Post post, User user) {
-        return post.getPoll().getAnswers().stream().filter(answer -> answer.getVoters().contains(user)).findFirst().get().getId();
+        return post.getPoll().getAnswers()
+                .stream()
+                .filter(answer -> answer.getVoters()
+                        .stream()
+                        .anyMatch(v-> v.getId().equals(user.getId())))
+                .findFirst().get().getId();
     }
 
     @GetMapping("/{postId}/comments")
@@ -165,7 +175,7 @@ public class PostController {
         if(post==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if(!isPostVoted(post, mockUser)) {
+        if(!userVotedForPost(post, mockUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
@@ -177,7 +187,7 @@ public class PostController {
         if(post==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if(!isPostVoted(post, mockUser)) {
+        if(!userVotedForPost(post, mockUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         Comment comment = new Comment(mockUser, text);
@@ -190,10 +200,5 @@ public class PostController {
         CommentsListDTO commentsListDTO = new CommentsListDTO();
         post.getComments().forEach(comment -> commentsListDTO.addComment(modelMapper.map(comment, CommentDTO.class)));
         return commentsListDTO;
-    }
-
-    private boolean isPostVoted(Post post, User user) {
-        //TODO
-        return false;
     }
 }

@@ -2,7 +2,8 @@ package pl.edu.agh.tai.dilemmasask.api.DTO;
 
 import java.util.List;
 
-class NotVotedPollDTO extends PollDTO{
+public class NotVotedPollDTO extends PollDTO{
+
     private List<NotVotedAnswerDTO> answers;
 
     public List<NotVotedAnswerDTO> getAnswers() {

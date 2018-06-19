@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import pl.edu.agh.tai.dilemmasask.api.model.*;
 import pl.edu.agh.tai.dilemmasask.api.repository.PostRepository;
 import pl.edu.agh.tai.dilemmasask.api.repository.TagsRepository;
+import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -20,6 +21,8 @@ public class DataInit implements ApplicationRunner {
     private PostRepository postRepository;
     @Autowired
     private TagsRepository tagsRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         postRepository.save(new Post(
@@ -28,14 +31,17 @@ public class DataInit implements ApplicationRunner {
                 new Poll("What it is?",
                         Arrays.asList(new Answer("123"), new Answer("great"), new Answer("perfect")))));
         Answer answer = new Answer("1");
-        answer.incrementVotes();
+        User newUser = new User("abcd");
+        userRepository.save(newUser);
 
         Post post = new Post(
                 LocalDateTime.of(2018, 3, 10, 10, 2, 44),
                 new User("michał"),
                 new Poll("What should I choose?",
                         Arrays.asList(answer, new Answer("2"), new Answer("3"))));
+        answer.vote(newUser);
         postRepository.save(post);
+
 
     }
 }

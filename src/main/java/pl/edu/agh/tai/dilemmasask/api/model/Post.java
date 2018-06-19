@@ -103,4 +103,17 @@ public class Post {
     public void addTag(Tag t) {
         tags.add(t);
     }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", dateTime=" + dateTime +
+                ", author=" + author +
+                ", poll=" + poll +
+                ", comments=" + comments +
+                ", totalVotes=" + totalVotes +
+                ", tags=" + tags +
+                '}';
+    }
 }
