@@ -13,6 +13,10 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     Post findByCommentsId(Long id);
+
     Page<Post> findByTagsName(String tag, Pageable pageable);
+
     Page<Post> findByTagsNameAndDateTimeBetween(String tag, LocalDateTime from, LocalDateTime to, Pageable pageable);
+
+    Page<Post> findByDateTimeBetween(LocalDateTime dateFrom, LocalDateTime dateTo, Pageable pageable);
 }

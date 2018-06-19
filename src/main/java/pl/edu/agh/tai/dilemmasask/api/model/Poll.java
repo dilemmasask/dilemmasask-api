@@ -11,8 +11,8 @@ public class Poll {
     private List<Answer> answers = new ArrayList<>();
 
 
-//    @OneToMany
-//    private Set<Tag> tags = new HashSet<>();
+    @OneToMany
+    private Set<Tag> tags = new HashSet<>();
 
     public Poll() {
     }
@@ -42,17 +42,17 @@ public class Poll {
         this.answers = answers;
     }
 
-//    public Set<Tag> getTags() {
-//        return tags;
-//    }
-//
-//    public void setTags(Set<Tag> tags) {
-//        this.tags = tags;
-//    }
-//
-//    public void addTag(Tag tag){
-//        tags.add(tag);
-//    }
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(Tag tag){
+        tags.add(tag);
+    }
 
     public int getTotalVotes(){
         return answers.stream().mapToInt(Answer::getVotes).sum();

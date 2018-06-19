@@ -36,7 +36,7 @@ public class DataInit implements ApplicationRunner {
                 new User("michał"),
                 new Poll("What should I choose?",
                         Arrays.asList(new Answer("1"), new Answer("2"), new Answer("3"))));
-
+        post.addTag(new Tag("a"));
         postRepository.save(post);
 
 

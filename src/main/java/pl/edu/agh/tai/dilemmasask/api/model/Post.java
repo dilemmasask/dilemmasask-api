@@ -24,7 +24,7 @@ public class Post {
 
     private int totalVotes;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private Set<Tag> tags = new HashSet<>();
 
     public Post() {}

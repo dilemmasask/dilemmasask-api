@@ -35,6 +35,7 @@ public class PostController {
         this.commentRepository = commentRepository;
         this.tagsRepository = tagsRepository;
         this.modelMapper = new ModelMapper();
+        userRepository.save(mockUser);
     }
 
     @GetMapping
@@ -49,6 +50,7 @@ public class PostController {
         if(pageNumber < 1 || pollsPerPage < 1){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+        User user = mockUser;
         Page<Post> posts;
         switch (sortBy){
             case "new":
@@ -62,14 +64,16 @@ public class PostController {
         }
         PostsListDTO postsListDTO = new PostsListDTO();
 
-        posts.getContent().forEach(post -> postsListDTO.addPost(getProperPost(post, mockUser)));
+        posts.getContent().forEach(post -> postsListDTO.addPost(getProperPost(post, user)));
 
         return ResponseEntity.status(HttpStatus.OK).body(postsListDTO);
     }
 
     private PostDTO getProperPost(Post post, User user) {
         if(userVotedForPost(post, user)){
-            return modelMapper.map(post, VotedPostDTO.class);
+            VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
+            votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, user));
+            return votedPostDTO;
         } else {
             return modelMapper.map(post, NotVotedPostDTO.class);
         }
@@ -81,38 +85,39 @@ public class PostController {
         LocalDateTime dateTo = LocalDateTime.parse(to, formatter);
 
         Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.DESC, sortBy));
-        return postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable);
+        if(tag != null){
+            return postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable);
+        } else {
+            return postRepository.findByDateTimeBetween(dateFrom, dateTo, pageable);
+        }
     }
 
     private Page<Post> getRandomPosts(Integer pageNumber, Integer pollsPerPage, String tag) {
         Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage);
-        return postRepository.findByTagsName(tag, pageable);
+        if(tag != null) {
+            return postRepository.findByTagsName(tag, pageable);
+        } else {
+            return postRepository.findAll(pageable);
+        }
     }
 
     @GetMapping("/{postId}")
     private ResponseEntity getPost(@PathVariable Long postId){
         Post post = postRepository.findById(postId).orElse(null);
-        if(post==null) {
+        User user = mockUser;
+        if(post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-
-        PostDTO postDTO;
-        if(userVotedForPost(post, mockUser)){
-            VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
-            votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, mockUser));
-            postDTO = votedPostDTO;
-        } else {
-            postDTO = modelMapper.map(post, NotVotedPostDTO.class);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(postDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(getProperPost(post, user));
     }
 
     @PostMapping
     private ResponseEntity addNewPost(@RequestBody Poll poll){
-        if(poll.getQuestion()==null || poll.getQuestion().isEmpty() || poll.getAnswers()==null || poll.getAnswers().isEmpty()){
+        User user = mockUser;
+        if(poll.getQuestion() == null || poll.getQuestion().isEmpty() || poll.getAnswers() == null || poll.getAnswers().isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        Post post = new Post(mockUser, poll);
+        Post post = new Post(user, poll);
         postRepository.save(post);
         return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(post, NotVotedPostDTO.class));
     }
@@ -120,10 +125,11 @@ public class PostController {
     @DeleteMapping("/{postId}")
     private ResponseEntity deletePost(@PathVariable Long postId){
         Post post = postRepository.findById(postId).orElse(null);
+        User user = mockUser;
         if (post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if(!userIsAllowedToDeletePost(post, mockUser)){
+        if(!userIsAllowedToDeletePost(post, user)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -138,19 +144,19 @@ public class PostController {
     @PutMapping("/{postId}/vote/{answerId}")
     private ResponseEntity vote(@PathVariable Long postId, @PathVariable final Long answerId){
         Post post = postRepository.findById(postId).orElse(null);
+        User user = mockUser;
         if (post == null || !postContainsAnswer(post, answerId)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-
-        if(!userVotedForPost(post, mockUser)){
-            post.voteAnswer(mockUser, answerId);
+        userRepository.save(user);
+        if(!userVotedForPost(post, user)){
+            post.voteAnswer(user, answerId);
             postRepository.save(post);
         }
 
         VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
-        votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, mockUser));
+        votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, user));
         return ResponseEntity.status(HttpStatus.OK).body(votedPostDTO);
-
     }
 
     private boolean postContainsAnswer(Post post, Long answerId) {
