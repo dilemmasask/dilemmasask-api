@@ -98,12 +98,13 @@ public class PostController {
 
         PostDTO postDTO;
         if(userVotedForPost(post, mockUser)){
-            postDTO = modelMapper.map(post, VotedPostDTO.class);
+            VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
+            votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, mockUser));
+            postDTO = votedPostDTO;
         } else {
             postDTO = modelMapper.map(post, NotVotedPostDTO.class);
         }
         return ResponseEntity.status(HttpStatus.OK).body(postDTO);
-
     }
 
     @PostMapping
@@ -131,7 +132,7 @@ public class PostController {
     }
 
     private boolean userIsAllowedToDeletePost(Post post, User user) {
-        return post.getAuthor().equals(user);
+        return post.getAuthor().getId().equals(user.getId());
     }
 
     @PutMapping("/{postId}/vote/{answerId}")
@@ -140,7 +141,7 @@ public class PostController {
         if (post == null || !postContainsAnswer(post, answerId)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        userRepository.save(mockUser);
+
         if(!userVotedForPost(post, mockUser)){
             post.voteAnswer(mockUser, answerId);
             postRepository.save(post);
@@ -156,7 +157,7 @@ public class PostController {
         return post.getPoll().getAnswers().stream().anyMatch(a -> a.getId().equals(answerId));
     }
 
-    private boolean userVotedForPost(Post post, User user) {
+    public static boolean userVotedForPost(Post post, User user) {
         return post.getPoll().getAnswers().stream().anyMatch(a -> a.getVoters().stream().anyMatch(v->v.getId().equals(user.getId())));
     }
 
@@ -169,36 +170,4 @@ public class PostController {
                 .findFirst().get().getId();
     }
 
-    @GetMapping("/{postId}/comments")
-    private ResponseEntity getComments(@PathVariable Long postId){
-        Post post = postRepository.findById(postId).orElse(null);
-        if(post==null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        if(!userVotedForPost(post, mockUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
-    }
-
-    @PostMapping("/{postId}/comments")
-    private ResponseEntity postComment(@PathVariable Long postId, @RequestBody String text){
-        Post post = postRepository.findById(postId).orElse(null);
-        if(post==null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        if(!userVotedForPost(post, mockUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        Comment comment = new Comment(mockUser, text);
-        commentRepository.save(comment);
-        post.addComment(comment);
-        return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
-    }
-
-    private CommentsListDTO getCommentsFromPost(Post post){
-        CommentsListDTO commentsListDTO = new CommentsListDTO();
-        post.getComments().forEach(comment -> commentsListDTO.addComment(modelMapper.map(comment, CommentDTO.class)));
-        return commentsListDTO;
-    }
 }

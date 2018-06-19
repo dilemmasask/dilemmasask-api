@@ -30,16 +30,13 @@ public class DataInit implements ApplicationRunner {
                 new User("dawid"),
                 new Poll("What it is?",
                         Arrays.asList(new Answer("123"), new Answer("great"), new Answer("perfect")))));
-        Answer answer = new Answer("1");
-        User newUser = new User("abcd");
-        userRepository.save(newUser);
 
         Post post = new Post(
                 LocalDateTime.of(2018, 3, 10, 10, 2, 44),
                 new User("michał"),
                 new Poll("What should I choose?",
-                        Arrays.asList(answer, new Answer("2"), new Answer("3"))));
-        answer.vote(newUser);
+                        Arrays.asList(new Answer("1"), new Answer("2"), new Answer("3"))));
+
         postRepository.save(post);
 
 

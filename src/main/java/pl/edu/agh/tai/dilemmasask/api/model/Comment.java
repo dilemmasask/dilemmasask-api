@@ -10,7 +10,7 @@ public class Comment {
     private Long id;
     private LocalDateTime dateTime;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private User author;
 
     private String text;
@@ -36,6 +36,9 @@ public class Comment {
         this.dateTime = dateTime;
     }
 
+    public void setCurrentDateTime(){
+        this.dateTime = LocalDateTime.now();
+    }
     public User getAuthor() {
         return author;
     }
@@ -50,5 +53,15 @@ public class Comment {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", dateTime=" + dateTime +
+                ", author=" + author +
+                ", text='" + text + '\'' +
+                '}';
     }
 }
