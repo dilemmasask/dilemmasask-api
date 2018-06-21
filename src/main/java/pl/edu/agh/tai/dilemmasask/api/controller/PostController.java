@@ -12,8 +12,10 @@ import pl.edu.agh.tai.dilemmasask.api.DTO.*;
 import pl.edu.agh.tai.dilemmasask.api.model.*;
 import pl.edu.agh.tai.dilemmasask.api.repository.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/posts")

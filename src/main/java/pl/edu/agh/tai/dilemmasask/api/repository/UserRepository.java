@@ -6,4 +6,5 @@ import pl.edu.agh.tai.dilemmasask.api.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    User findByPrincipalId(String principalId);
 }

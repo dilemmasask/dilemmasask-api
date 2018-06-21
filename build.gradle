@@ -21,6 +21,8 @@ sourceCompatibility = 1.8
 
 repositories {
 	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+
 }
 
 
@@ -28,9 +30,13 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile group: 'org.modelmapper', name: 'modelmapper', version: '0.7.5'
+	compile 'org.springframework.boot:spring-boot-starter-security'
+	compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.2.BUILD-SNAPSHOT'
+	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+
 	runtime('org.postgresql:postgresql')
 	compileOnly('org.projectlombok:lombok')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile group: 'com.h2database', name: 'h2', version: '1.4.197'
-
+	testCompile('org.springframework.security:spring-security-test')
 }
