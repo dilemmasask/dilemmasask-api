@@ -151,7 +151,7 @@ public class PostController {
         if (post == null || !postContainsAnswer(post, answerId)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        userRepository.save(user);
+
         if(!userVotedForPost(post, user)){
             post.voteAnswer(user, answerId);
             postRepository.save(post);
