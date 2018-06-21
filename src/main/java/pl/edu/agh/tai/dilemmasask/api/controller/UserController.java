@@ -7,13 +7,8 @@ import pl.edu.agh.tai.dilemmasask.api.model.User;
 @RestController
 public class UserController {
 
-    @GetMapping("/login")
+    @GetMapping(value = {"/login", "/user"}) //just for test
     public User getLoggedUser(@AuthenticationPrincipal User user) {
-        return user;
-    }
-
-    @GetMapping("/user")
-    public User getUser(@AuthenticationPrincipal User user) {
         return user;
     }
 

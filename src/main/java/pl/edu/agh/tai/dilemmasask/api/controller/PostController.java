@@ -7,20 +7,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.tai.dilemmasask.api.DTO.*;
 import pl.edu.agh.tai.dilemmasask.api.model.*;
 import pl.edu.agh.tai.dilemmasask.api.repository.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 @RestController
 @RequestMapping("/posts")
 public class PostController {
-    //TODO user
     private PostRepository postRepository;
     private AnswerRepository answerRepository;
     private UserRepository userRepository;
@@ -28,7 +26,6 @@ public class PostController {
     private TagsRepository tagsRepository;
     private final ModelMapper modelMapper;
     private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private final static User mockUser = new User("mock");
 
     public PostController(PostRepository postRepository, AnswerRepository answerRepository, UserRepository userRepository, CommentRepository commentRepository, TagsRepository tagsRepository) {
         this.postRepository = postRepository;
@@ -37,22 +34,22 @@ public class PostController {
         this.commentRepository = commentRepository;
         this.tagsRepository = tagsRepository;
         this.modelMapper = new ModelMapper();
-        userRepository.save(mockUser);
     }
 
     @GetMapping
-    private ResponseEntity getPolls(
+    private ResponseEntity getPolls(@AuthenticationPrincipal User principal,
             @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
             @RequestParam(value = "per_page", defaultValue = "10") Integer pollsPerPage,
-            @RequestParam(value = "sort", defaultValue = "new") String sortBy,
+            @RequestParam(value = "sort", defaultValue = "random") String sortBy,
             @RequestParam(value = "from", required = false) String dateFrom,
             @RequestParam(value = "to", required = false) String dateTo,
             @RequestParam(value = "tag", required = false) String tag) {
+        System.out.println("principal user: " + principal);
+        User user = getLoggedUser(principal);
 
         if(pageNumber < 1 || pollsPerPage < 1){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        User user = mockUser;
         Page<Post> posts;
         switch (sortBy){
             case "new":
@@ -61,6 +58,7 @@ public class PostController {
             case "top":
                 posts = getSortedPosts(pageNumber, dateFrom, dateTo, pollsPerPage, tag, "totalVotes");
                 break;
+            case "random":
             default:
                 posts = getRandomPosts(pageNumber, pollsPerPage, tag);
         }
@@ -72,7 +70,7 @@ public class PostController {
     }
 
     private PostDTO getProperPost(Post post, User user) {
-        if(userVotedForPost(post, user)){
+        if(user != null && userVotedForPost(post, user)){
             VotedPostDTO votedPostDTO = modelMapper.map(post, VotedPostDTO.class);
             votedPostDTO.setVotedAnswerId(getVotedAnswerId(post, user));
             return votedPostDTO;
@@ -104,9 +102,10 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    private ResponseEntity getPost(@PathVariable Long postId){
+    private ResponseEntity getPost(@AuthenticationPrincipal User principal, @PathVariable Long postId){
+        User user = getLoggedUser(principal);
         Post post = postRepository.findById(postId).orElse(null);
-        User user = mockUser;
+
         if(post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -114,9 +113,11 @@ public class PostController {
     }
 
     @PostMapping
-    private ResponseEntity addNewPost(@RequestBody Poll poll){
-        User user = mockUser;
-        if(poll.getQuestion() == null || poll.getQuestion().isEmpty() || poll.getAnswers() == null || poll.getAnswers().isEmpty()){
+    private ResponseEntity addNewPost(@AuthenticationPrincipal User principal, @RequestBody Poll poll){
+        User user = getLoggedUser(principal);
+
+        if(poll == null || poll.getQuestion() == null || poll.getQuestion().isEmpty()
+                || poll.getAnswers() == null || poll.getAnswers().isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         Post post = new Post(user, poll);
@@ -125,9 +126,9 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
-    private ResponseEntity deletePost(@PathVariable Long postId){
+    private ResponseEntity deletePost(@AuthenticationPrincipal User principal, @PathVariable Long postId){
+        User user = getLoggedUser(principal);
         Post post = postRepository.findById(postId).orElse(null);
-        User user = mockUser;
         if (post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -144,9 +145,9 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/vote/{answerId}")
-    private ResponseEntity vote(@PathVariable Long postId, @PathVariable final Long answerId){
+    private ResponseEntity vote(@AuthenticationPrincipal User principal, @PathVariable Long postId, @PathVariable final Long answerId){
+        User user = getLoggedUser(principal);
         Post post = postRepository.findById(postId).orElse(null);
-        User user = mockUser;
         if (post == null || !postContainsAnswer(post, answerId)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -167,6 +168,9 @@ public class PostController {
 
     public static boolean userVotedForPost(Post post, User user) {
         return post.getPoll().getAnswers().stream().anyMatch(a -> a.getVoters().stream().anyMatch(v->v.getId().equals(user.getId())));
+    }
+    public User getLoggedUser(User principal) {
+        return principal == null ? null : userRepository.findByPrincipalId(principal.getPrincipalId());
     }
 
     private Long getVotedAnswerId(Post post, User user) {
