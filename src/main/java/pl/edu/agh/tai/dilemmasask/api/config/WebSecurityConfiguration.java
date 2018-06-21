@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 
@@ -30,9 +29,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/posts/*", "/posts")
                 .permitAll()
                 .anyRequest()
-                .authenticated()
-                .and().logout().logoutSuccessUrl("/").permitAll()
-                .and().csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+                .authenticated();
     }
 
     @Bean
@@ -41,7 +38,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             String principalId = (String) map.get("id");
             User user = userRepository.findByPrincipalId(principalId);
             if (user == null) {
-                System.out.println("Creating new user");
                 user = new User();
                 user.setEmail((String) map.get("email"));
                 user.setFullName((String) map.get("name"));

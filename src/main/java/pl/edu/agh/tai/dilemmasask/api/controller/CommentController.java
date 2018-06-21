@@ -32,14 +32,11 @@ public class CommentController {
     @GetMapping("/posts/{postId}/comments")
     private ResponseEntity getComments(@AuthenticationPrincipal User principal, @PathVariable Long postId){
         User user = getLoggedUser(principal);
-        System.out.println("comments principal: " + principal);
-
         Post post = postRepository.findById(postId).orElse(null);
         if(post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         if(!userVotedForPost(post, user)) {
-            System.out.println("not voted");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));

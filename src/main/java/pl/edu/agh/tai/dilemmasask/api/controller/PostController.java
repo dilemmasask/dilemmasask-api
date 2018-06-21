@@ -44,7 +44,6 @@ public class PostController {
             @RequestParam(value = "from", required = false) String dateFrom,
             @RequestParam(value = "to", required = false) String dateTo,
             @RequestParam(value = "tag", required = false) String tag) {
-        System.out.println("principal user: " + principal);
         User user = getLoggedUser(principal);
 
         if(pageNumber < 1 || pollsPerPage < 1){
