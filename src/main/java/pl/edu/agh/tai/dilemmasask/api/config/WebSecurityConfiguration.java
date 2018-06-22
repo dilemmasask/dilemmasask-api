@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 
@@ -29,7 +30,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/posts/*", "/posts")
                 .permitAll()
                 .anyRequest()
-                .authenticated();
+                .authenticated().and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/").deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true);
     }
 
     @Bean

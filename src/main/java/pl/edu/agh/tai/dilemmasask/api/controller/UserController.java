@@ -4,11 +4,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
 
+import java.security.Principal;
+
 @RestController
 public class UserController {
 
-    @GetMapping(value = {"/login", "/user"}) //just for test
-    public User getLoggedUser(@AuthenticationPrincipal User user) {
+    @GetMapping(value = "/user") //just for test
+    public Principal getLoggedUser(Principal user) {
         return user;
     }
 
