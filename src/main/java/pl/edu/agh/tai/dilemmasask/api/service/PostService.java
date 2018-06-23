@@ -28,14 +28,15 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public ResponseEntity getPosts(User user, Integer pageNumber, Integer pollsPerPage, String sortBy, LocalDateTime dateFrom, LocalDateTime dateTo, String tag) {
+    public ResponseEntity getPosts(User user, Integer pageNumber, Integer pollsPerPage, String sortBy, LocalDateTime from, LocalDateTime to, String tag) {
+
         Page<Post> posts;
         switch (sortBy){
             case "new":
-                posts = getSortedPosts(pageNumber, pollsPerPage, dateFrom, dateTo, tag, "dateTime");
+                posts = getSortedPosts(pageNumber, pollsPerPage, from, to, tag, "dateTime");
                 break;
             case "top":
-                posts = getSortedPosts(pageNumber, pollsPerPage, dateFrom, dateTo, tag, "totalVotes");
+                posts = getSortedPosts(pageNumber, pollsPerPage, from, to, tag, "totalVotes");
                 break;
             case "random":
             default:
@@ -49,6 +50,8 @@ public class PostService {
     }
 
     private Page<Post> getSortedPosts(Integer pageNumber, Integer pollsPerPage, LocalDateTime dateFrom, LocalDateTime dateTo, String tag, String sortBy) {
+        //LocalDateTime dateFrom = LocalDateTime.parse(from, formatter);
+        //LocalDateTime dateTo = LocalDateTime.parse(to, formatter);
         Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.DESC, sortBy));
         if(tag != null){
             return postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable);
@@ -85,10 +88,6 @@ public class PostService {
     }
 
     public ResponseEntity addNewPost(User user, Poll poll) {
-        if(poll == null || poll.getQuestion() == null || poll.getQuestion().isEmpty()
-                || poll.getAnswers() == null || poll.getAnswers().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
         Post post = new Post(user, poll);
         postRepository.save(post);
         return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(post, NotVotedPostDTO.class));

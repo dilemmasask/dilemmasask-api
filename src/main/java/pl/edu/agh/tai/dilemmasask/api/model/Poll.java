@@ -3,6 +3,8 @@ package pl.edu.agh.tai.dilemmasask.api.model;
 import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,8 +12,12 @@ import java.util.Set;
 
 @Embeddable
 public class Poll {
+    @NotNull
+    @NotEmpty
     private String question;
 
+    @NotNull
+    @NotEmpty
     @OneToMany(cascade = CascadeType.ALL)
     private List<Answer> answers = new ArrayList<>();
 
@@ -35,7 +41,7 @@ public class Poll {
         this.question = question;
     }
 
-    public void voteAnswer(User voter, long answerId) {
+    void voteAnswer(User voter, long answerId) {
         answers.stream().filter(a -> a.getId().equals(answerId)).findFirst().ifPresent(answer -> answer.vote(voter));
     }
 
@@ -59,9 +65,8 @@ public class Poll {
         tags.add(tag);
     }
 
-    public int getTotalVotes(){
+    int getTotalVotes(){
         return answers.stream().mapToInt(Answer::getVotes).sum();
     }
-
 
 }

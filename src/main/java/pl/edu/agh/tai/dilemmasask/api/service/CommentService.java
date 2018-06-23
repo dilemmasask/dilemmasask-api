@@ -36,7 +36,7 @@ public class CommentService {
 
     public ResponseEntity postComment(User user, Long postId, Comment comment) {
         Post post = postRepository.findById(postId).orElse(null);
-        if(post == null || comment == null) {
+        if(post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         if(!userVotedForPost(post, user)) {

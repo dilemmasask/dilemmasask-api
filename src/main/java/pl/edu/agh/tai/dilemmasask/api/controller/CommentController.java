@@ -8,6 +8,8 @@ import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 import pl.edu.agh.tai.dilemmasask.api.service.CommentService;
 
+import javax.validation.constraints.NotNull;
+
 @RestController
 public class CommentController {
 
@@ -26,7 +28,7 @@ public class CommentController {
     }
 
     @PostMapping("/posts/{postId}/comments")
-    private ResponseEntity postComment(@AuthenticationPrincipal User principal, @PathVariable Long postId, @RequestBody Comment comment){
+    private ResponseEntity postComment(@AuthenticationPrincipal User principal, @PathVariable Long postId, @RequestBody @NotNull Comment comment){
         User user = getLoggedUser(principal);
         return commentService.postComment(user, postId, comment);
     }

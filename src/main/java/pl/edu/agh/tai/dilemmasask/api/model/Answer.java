@@ -1,6 +1,8 @@
 package pl.edu.agh.tai.dilemmasask.api.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +11,9 @@ public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull
+    @NotEmpty
     private String text;
     private int votes = 0;
 
@@ -42,7 +47,7 @@ public class Answer {
         this.votes = votes;
     }
 
-    public void vote(User voter) {
+    void vote(User voter) {
         voters.add(voter);
         voter.addAnswer(this);
         votes++;

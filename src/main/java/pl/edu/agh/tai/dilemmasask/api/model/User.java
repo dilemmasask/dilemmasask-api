@@ -66,7 +66,7 @@ public class User {
         this.created = created;
     }
 
-    public void addAnswer(Answer answer) {
+    void addAnswer(Answer answer) {
         this.answers.add(answer);
     }
 
