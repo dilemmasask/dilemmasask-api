@@ -11,7 +11,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 
-
 import java.time.LocalDateTime;
 
 @EnableOAuth2Sso

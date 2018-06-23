@@ -1,7 +1,12 @@
 package pl.edu.agh.tai.dilemmasask.api.model;
 
-import javax.persistence.*;
-import java.util.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Embeddable;
+import javax.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Embeddable
 public class Poll {

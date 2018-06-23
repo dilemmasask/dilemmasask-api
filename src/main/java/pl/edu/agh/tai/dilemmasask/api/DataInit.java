@@ -1,6 +1,5 @@
 package pl.edu.agh.tai.dilemmasask.api;
 
-import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -12,8 +11,6 @@ import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 @Component
 public class DataInit implements ApplicationRunner {
