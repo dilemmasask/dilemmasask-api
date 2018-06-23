@@ -18,9 +18,11 @@ import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.PostRepository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class PostService {
+
     private PostRepository postRepository;
     private static final ModelMapper modelMapper = new ModelMapper();
 
@@ -50,8 +52,6 @@ public class PostService {
     }
 
     private Page<Post> getSortedPosts(Integer pageNumber, Integer pollsPerPage, LocalDateTime dateFrom, LocalDateTime dateTo, String tag, String sortBy) {
-        //LocalDateTime dateFrom = LocalDateTime.parse(from, formatter);
-        //LocalDateTime dateTo = LocalDateTime.parse(to, formatter);
         Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.DESC, sortBy));
         if(tag != null){
             return postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable);
@@ -70,7 +70,8 @@ public class PostService {
     }
 
     public ResponseEntity getPost(User user, Long postId) {
-        Post post = postRepository.findById(postId).orElse(null);
+        Optional<Post> op = postRepository.findById(postId);
+        Post post = op.get();
         if(post == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

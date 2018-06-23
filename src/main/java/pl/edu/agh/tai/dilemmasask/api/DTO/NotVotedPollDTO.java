@@ -14,4 +14,10 @@ public class NotVotedPollDTO extends PollDTO{
         this.answers = answers;
     }
 
+    @Override
+    public String toString() {
+        return "NotVotedPollDTO{" +
+                "answers=" + answers +
+                '}';
+    }
 }

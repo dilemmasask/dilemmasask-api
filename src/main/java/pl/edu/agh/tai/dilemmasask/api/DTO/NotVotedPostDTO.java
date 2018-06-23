@@ -10,4 +10,11 @@ public class NotVotedPostDTO extends PostDTO{
     public void setPoll(NotVotedPollDTO poll) {
         this.poll = poll;
     }
+
+    @Override
+    public String toString() {
+        return "NotVotedPostDTO{" +
+                "poll=" + poll +
+                '}';
+    }
 }
