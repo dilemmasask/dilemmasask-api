@@ -34,7 +34,7 @@ public class VotedPostDTO extends PostDTO{
     public String toString() {
         return "VotedPostDTO{" +
                 "poll=" + poll +
-                ", comments=" + comments +
+                ", comment=" + comments +
                 '}';
     }
 }

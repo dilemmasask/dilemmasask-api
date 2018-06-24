@@ -1,4 +1,4 @@
-package pl.edu.agh.tai.dilemmasask.api.service;
+package pl.edu.agh.tai.dilemmasask.api.service.post;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -19,6 +19,7 @@ import pl.edu.agh.tai.dilemmasask.api.model.Poll;
 import pl.edu.agh.tai.dilemmasask.api.model.Post;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.PostRepository;
+import pl.edu.agh.tai.dilemmasask.api.service.PostService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

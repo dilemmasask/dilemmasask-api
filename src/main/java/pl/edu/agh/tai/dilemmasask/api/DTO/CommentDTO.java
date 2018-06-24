@@ -37,4 +37,14 @@ public class CommentDTO {
     public void setText(String text) {
         this.text = text;
     }
+
+    @Override
+    public String toString() {
+        return "CommentDTO{" +
+                "id=" + id +
+                ", dateTime='" + dateTime + '\'' +
+                ", author=" + author +
+                ", text='" + text + '\'' +
+                '}';
+    }
 }

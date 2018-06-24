@@ -114,7 +114,7 @@ public class Post {
                 ", dateTime=" + dateTime +
                 ", author=" + author +
                 ", poll=" + poll +
-                ", comments=" + comments +
+                ", comment=" + comments +
                 ", totalVotes=" + totalVotes +
                 ", tags=" + tags +
                 '}';

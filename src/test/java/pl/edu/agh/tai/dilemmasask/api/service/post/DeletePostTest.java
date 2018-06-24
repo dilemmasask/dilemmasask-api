@@ -1,4 +1,4 @@
-package pl.edu.agh.tai.dilemmasask.api.service;
+package pl.edu.agh.tai.dilemmasask.api.service.post;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import pl.edu.agh.tai.dilemmasask.api.model.Post;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
 import pl.edu.agh.tai.dilemmasask.api.repository.PostRepository;
+import pl.edu.agh.tai.dilemmasask.api.service.PostService;
 
 import java.util.Optional;
 
@@ -75,4 +76,6 @@ public class DeletePostTest {
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
+
+
 }

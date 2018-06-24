@@ -17,4 +17,11 @@ public class CommentsListDTO {
     public void addComment(CommentDTO commentDTO){
         comments.add(commentDTO);
     }
+
+    @Override
+    public String toString() {
+        return "CommentsListDTO{" +
+                "comments=" + comments +
+                '}';
+    }
 }
