@@ -10,4 +10,11 @@ public class VotedAnswerDTO extends NotVotedAnswerDTO{
     public void setVotes(Integer votes) {
         this.votes = votes;
     }
+
+    @Override
+    public String toString() {
+        return "VotedAnswerDTO{" +
+                "votes=" + votes +
+                '}';
+    }
 }

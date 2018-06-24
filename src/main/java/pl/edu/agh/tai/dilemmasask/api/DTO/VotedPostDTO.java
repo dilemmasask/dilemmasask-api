@@ -25,4 +25,16 @@ public class VotedPostDTO extends PostDTO{
     public void setVotedAnswerId(Long answerId){
         poll.setVotedAnswerId(answerId);
     }
+
+    public Long getVotedAnswerId(){
+        return poll.getVotedAnswerId();
+    }
+
+    @Override
+    public String toString() {
+        return "VotedPostDTO{" +
+                "poll=" + poll +
+                ", comments=" + comments +
+                '}';
+    }
 }

@@ -70,12 +70,11 @@ public class PostService {
     }
 
     public ResponseEntity getPost(User user, Long postId) {
-        Optional<Post> op = postRepository.findById(postId);
-        Post post = op.get();
-        if(post == null) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if(!optionalPost.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.status(HttpStatus.OK).body(getProperPost(post, user));
+        return ResponseEntity.status(HttpStatus.OK).body(getProperPost(optionalPost.get(), user));
     }
 
     private PostDTO getProperPost(Post post, User user) {
@@ -95,11 +94,13 @@ public class PostService {
     }
 
     public ResponseEntity deletePost(Long postId, User user) {
-        Post post = postRepository.findById(postId).orElse(null);
-        if (post == null) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        //Post post = postRepository.findById(postId).orElse(null);
+
+        if (!optionalPost.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if(!userIsAllowedToDeletePost(post, user)){
+        if(!userIsAllowedToDeletePost(optionalPost.get(), user)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

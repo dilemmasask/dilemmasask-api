@@ -2,7 +2,7 @@ package pl.edu.agh.tai.dilemmasask.api.DTO;
 
 import java.util.List;
 
-class VotedPollDTO extends PollDTO{
+public class VotedPollDTO extends PollDTO{
     private List<VotedAnswerDTO> answers;
     private Long votedAnswerId;
 
@@ -22,4 +22,11 @@ class VotedPollDTO extends PollDTO{
         this.votedAnswerId = votedAnswerId;
     }
 
+    @Override
+    public String toString() {
+        return "VotedPollDTO{" +
+                "answers=" + answers +
+                ", votedAnswerId=" + votedAnswerId +
+                '}';
+    }
 }
