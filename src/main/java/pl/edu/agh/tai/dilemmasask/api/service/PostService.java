@@ -95,7 +95,6 @@ public class PostService {
 
     public ResponseEntity deletePost(Long postId, User user) {
         Optional<Post> optionalPost = postRepository.findById(postId);
-        //Post post = postRepository.findById(postId).orElse(null);
 
         if (!optionalPost.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

@@ -17,6 +17,8 @@ public class NotVotedPollDTO extends PollDTO{
     @Override
     public String toString() {
         return "NotVotedPollDTO{" +
+                "question=" + getQuestion() +
+                "tags=" + getTags() +
                 "answers=" + answers +
                 '}';
     }

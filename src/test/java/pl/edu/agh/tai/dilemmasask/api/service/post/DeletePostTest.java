@@ -49,7 +49,7 @@ public class DeletePostTest {
     }
 
     @Test
-    public void deletePostTest_shouldReturnForbidden_whenNotUserIsNotAllowedToDeleteThePost() {
+    public void deletePostTest_shouldReturnForbidden_whenUserIsNotAllowedToDeleteThePost() {
         User mockUser2 = Mockito.mock(User.class);
 
         Post mockPost = Mockito.mock(Post.class);
@@ -65,7 +65,7 @@ public class DeletePostTest {
     }
 
     @Test
-    public void deletePostTest_shouldReturnOk_whenNotUserIsAllowedToDeleteThePost() {
+    public void deletePostTest_shouldReturnOk_whenUserIsAllowedToDeleteThePost() {
         Post mockPost = Mockito.mock(Post.class);
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(mockPost));

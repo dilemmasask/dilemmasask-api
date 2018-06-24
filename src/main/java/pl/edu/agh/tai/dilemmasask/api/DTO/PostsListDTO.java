@@ -17,4 +17,11 @@ public class PostsListDTO {
     public void addPost(PostDTO postDTO){
         posts.add(postDTO);
     }
+
+    @Override
+    public String toString() {
+        return "PostsListDTO{" +
+                "posts=" + posts +
+                '}';
+    }
 }

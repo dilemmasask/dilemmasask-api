@@ -28,4 +28,12 @@ public abstract class PostDTO {
         this.author = author;
     }
 
+    @Override
+    public String toString() {
+        return "PostDTO{" +
+                "id=" + id +
+                ", dateTime='" + dateTime + '\'' +
+                ", author=" + author +
+                '}';
+    }
 }

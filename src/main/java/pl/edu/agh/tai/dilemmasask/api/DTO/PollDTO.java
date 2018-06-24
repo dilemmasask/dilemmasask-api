@@ -22,4 +22,5 @@ public abstract class PollDTO {
     public void setTags(List<TagDTO> tags) {
         this.tags = tags;
     }
+
 }
