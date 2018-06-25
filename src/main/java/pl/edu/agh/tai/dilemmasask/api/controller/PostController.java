@@ -30,7 +30,7 @@ public class PostController {
     @GetMapping
     private ResponseEntity getPosts(@AuthenticationPrincipal User principal,
             @RequestParam(value = "page", defaultValue = "1") @Size(min = 1) Integer pageNumber,
-            @RequestParam(value = "per_page", defaultValue = "10") @Size(min = 1) Integer pollsPerPage,
+            @RequestParam(value = "perPage", defaultValue = "10") @Size(min = 1) Integer pollsPerPage,
             @RequestParam(value = "sort", defaultValue = "random") String sortBy,
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
             @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
