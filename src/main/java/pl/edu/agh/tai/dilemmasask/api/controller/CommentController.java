@@ -1,46 +1,98 @@
 package pl.edu.agh.tai.dilemmasask.api.controller;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.agh.tai.dilemmasask.api.DTO.CommentDTO;
+import pl.edu.agh.tai.dilemmasask.api.DTO.CommentsListDTO;
 import pl.edu.agh.tai.dilemmasask.api.model.Comment;
+import pl.edu.agh.tai.dilemmasask.api.model.Post;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
-import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
-import pl.edu.agh.tai.dilemmasask.api.service.CommentService;
-
-import javax.validation.constraints.NotNull;
+import pl.edu.agh.tai.dilemmasask.api.repository.*;
 
 @RestController
 public class CommentController {
 
+    private CommentRepository commentRepository;
     private UserRepository userRepository;
-    private CommentService commentService;
+    private PostRepository postRepository;
+    private final ModelMapper modelMapper;
 
-    public CommentController(UserRepository userRepository, CommentService commentService) {
+
+    public CommentController(CommentRepository commentRepository, UserRepository userRepository, PostRepository postRepository) {
+        this.commentRepository = commentRepository;
         this.userRepository = userRepository;
-        this.commentService = commentService;
-    }
+        this.postRepository = postRepository;
+        this.modelMapper = new ModelMapper();
 
-    @GetMapping("/posts/{postId}/comment")
+    }
+    @GetMapping("/posts/{postId}/comments")
     private ResponseEntity getComments(@AuthenticationPrincipal User principal, @PathVariable Long postId){
         User user = getLoggedUser(principal);
-        return commentService.getComments(user, postId);
+        Post post = postRepository.findById(postId).orElse(null);
+        if(post == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if(!userVotedForPost(post, user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
     }
 
-    @PostMapping("/posts/{postId}/comment")
-    private ResponseEntity postComment(@AuthenticationPrincipal User principal, @PathVariable Long postId, @RequestBody @NotNull Comment comment){
+    @PostMapping("/posts/{postId}/comments")
+    private ResponseEntity postComment(@AuthenticationPrincipal User principal, @PathVariable Long postId, @RequestBody Comment comment){
         User user = getLoggedUser(principal);
-        return commentService.postComment(user, postId, comment);
+        Post post = postRepository.findById(postId).orElse(null);
+        if(post == null || comment == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if(!userVotedForPost(post, user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        comment.setAuthor(user);
+        comment.setCurrentDateTime();
+        post.addComment(comment);
+        postRepository.save(post);
+        return ResponseEntity.status(HttpStatus.OK).body(getCommentsFromPost(post));
     }
 
-    @DeleteMapping("/comment/{commentId}")
+    private CommentsListDTO getCommentsFromPost(Post post){
+        CommentsListDTO commentsListDTO = new CommentsListDTO();
+        post.getComments().forEach(comment -> commentsListDTO.addComment(modelMapper.map(comment, CommentDTO.class)));
+        return commentsListDTO;
+    }
+
+    @DeleteMapping("/comments/{commentId}")
     private ResponseEntity deleteComment(@AuthenticationPrincipal User principal, @PathVariable Long commentId){
         User user = getLoggedUser(principal);
-        return commentService.deleteComment(user, commentId);
+        Comment comment = commentRepository.findById(commentId).orElse(null);
+        if(comment == null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Post post = postRepository.findByCommentsId(commentId);
+
+        if (isUserAllowedToDeleteComment(user, comment)) {
+            post.removeComment(comment);
+            commentRepository.deleteById(commentId);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
-    private User getLoggedUser(User principal) {
+    private boolean isUserAllowedToDeleteComment(User user, Comment comment) {
+        return comment.getAuthor().getId().equals(user.getId());
+    }
+    public User getLoggedUser(User principal) {
         return principal == null ? null : userRepository.findByPrincipalId(principal.getPrincipalId());
+    }
+
+    private static boolean userVotedForPost(Post post, User user) {
+        return post.getPoll().getAnswers().stream().anyMatch(a -> a.getVoters().stream().anyMatch(v->v.getId().equals(user.getId())));
     }
 
 }

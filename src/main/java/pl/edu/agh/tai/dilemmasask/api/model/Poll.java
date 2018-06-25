@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Embeddable
 public class Poll {
@@ -21,9 +20,8 @@ public class Poll {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Answer> answers = new ArrayList<>();
 
-
-    @OneToMany
-    private Set<Tag> tags = new HashSet<>();
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Tag> tags = new ArrayList<>();
 
     public Poll() {
     }
@@ -53,11 +51,11 @@ public class Poll {
         this.answers = answers;
     }
 
-    public Set<Tag> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(Set<Tag> tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 

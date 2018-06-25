@@ -2,11 +2,15 @@ package pl.edu.agh.tai.dilemmasask.api.controller;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.agh.tai.dilemmasask.api.DTO.NotVotedPostDTO;
 import pl.edu.agh.tai.dilemmasask.api.model.Poll;
+import pl.edu.agh.tai.dilemmasask.api.model.Post;
 import pl.edu.agh.tai.dilemmasask.api.model.User;
+import pl.edu.agh.tai.dilemmasask.api.repository.PostRepository;
 import pl.edu.agh.tai.dilemmasask.api.repository.UserRepository;
 import pl.edu.agh.tai.dilemmasask.api.service.PostService;
 
@@ -20,11 +24,13 @@ public class PostController {
 
     private UserRepository userRepository;
     private PostService postService;
+    private PostRepository postRepository;
     private static final ModelMapper modelMapper = new ModelMapper();
 
-    public PostController(UserRepository userRepository, PostService postService) {
+    public PostController(UserRepository userRepository, PostService postService, PostRepository postRepository) {
         this.userRepository = userRepository;
         this.postService = postService;
+        this.postRepository = postRepository;
     }
 
     @GetMapping
@@ -32,10 +38,12 @@ public class PostController {
             @RequestParam(value = "page", defaultValue = "1") @Size(min = 1) Integer pageNumber,
             @RequestParam(value = "perPage", defaultValue = "10") @Size(min = 1) Integer pollsPerPage,
             @RequestParam(value = "sort", defaultValue = "random") String sortBy,
-            @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(value = "from", required = false, defaultValue = "2000-05-26T17:18:17.156Z") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
             @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
             @RequestParam(value = "tag", required = false) String tag) {
         User user = getLoggedUser(principal);
+        if(to == null) to = LocalDateTime.now();
+
         return postService.getPosts(user, pageNumber, pollsPerPage, sortBy, from, to, tag);
     }
 
@@ -48,7 +56,9 @@ public class PostController {
     @PostMapping
     private ResponseEntity addNewPost(@AuthenticationPrincipal User principal, @RequestBody @NotNull Poll poll){
         User user = getLoggedUser(principal);
-        return postService.addNewPost(user, poll);
+        Post post = new Post(user, poll);
+        postRepository.save(post);
+        return ResponseEntity.status(HttpStatus.OK).body(modelMapper.map(post, NotVotedPostDTO.class));
     }
 
     @DeleteMapping("/{postId}")
