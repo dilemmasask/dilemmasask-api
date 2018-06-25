@@ -25,15 +25,15 @@ public class DataInit implements ApplicationRunner {
         postRepository.save(new Post(
                 LocalDateTime.of(2018, 3, 5, 12, 0, 12),
                 new User("dawid"),
-                new Poll("What it is?",
-                        Arrays.asList(new Answer("123"), new Answer("great"), new Answer("perfect")))));
+                new Poll("Xbox One vs PS4?",
+                        Arrays.asList(new Answer("Xbox One"), new Answer("PS4"), new Answer("Show answers")))));
 
         Post post = new Post(
                 LocalDateTime.of(2018, 3, 10, 10, 2, 44),
                 new User("michał"),
                 new Poll("What should I choose?",
                         Arrays.asList(new Answer("1"), new Answer("2"), new Answer("3"))));
-        post.addTag(new Tag("a"));
+        post.addTag(new Tag("simple"));
         postRepository.save(post);
 
 

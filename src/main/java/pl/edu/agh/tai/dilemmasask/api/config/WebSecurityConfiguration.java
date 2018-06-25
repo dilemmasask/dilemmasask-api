@@ -22,7 +22,9 @@ public class WebSecurityConfiguration extends ResourceServerConfigurerAdapter {
         http
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/posts/*", "/posts")
+                .antMatchers(HttpMethod.GET, "/posts/**", "/posts")
+                .permitAll()
+                .antMatchers(HttpMethod.POST, "/posts/**")
                 .permitAll();
     }
 
