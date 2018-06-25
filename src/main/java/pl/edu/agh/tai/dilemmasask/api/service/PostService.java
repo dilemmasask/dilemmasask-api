@@ -35,7 +35,7 @@ public class PostService {
         Page<Post> posts;
         switch (sortBy){
             case "new":
-                posts = getSortedPosts(pageNumber, pollsPerPage, from, to, tag, "dateTime");
+                posts = getNewPosts(pageNumber, pollsPerPage, tag);
                 break;
             case "top":
                 posts = getSortedPosts(pageNumber, pollsPerPage, from, to, tag, "totalVotes");
@@ -49,6 +49,14 @@ public class PostService {
         posts.getContent().forEach(post -> postsListDTO.addPost(getProperPost(post, user)));
 
         return ResponseEntity.status(HttpStatus.OK).body(postsListDTO);
+    }
+    private Page<Post> getNewPosts(Integer pageNumber, Integer pollsPerPage, String tag) {
+        Pageable pageable = PageRequest.of(pageNumber-1, pollsPerPage, new Sort(Sort.Direction.DESC, "dateTime"));
+        if(tag != null){
+            return postRepository.findByTagsName(tag, pageable);
+        } else {
+            return postRepository.findAll(pageable);
+        }
     }
 
     private Page<Post> getSortedPosts(Integer pageNumber, Integer pollsPerPage, LocalDateTime dateFrom, LocalDateTime dateTo, String tag, String sortBy) {

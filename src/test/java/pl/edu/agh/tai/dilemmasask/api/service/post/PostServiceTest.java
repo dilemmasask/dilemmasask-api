@@ -94,14 +94,13 @@ public class PostServiceTest {
     @Test
     public void getNewPostsTest() {
         Pageable pageable = PageRequest.of(0, 2, new Sort(Sort.Direction.DESC, "dateTime"));
-        List<Post> posts = Arrays.asList(post1, post2);
 
         Page<Post> page = new PageImpl<>(posts, pageable, 2);
 
-        Mockito.when(postRepository.findByDateTimeBetween(dateFrom, dateTo, pageable))
+        Mockito.when(postRepository.findAll(pageable))
                 .thenReturn(page);
 
-        ResponseEntity responseEntity = postService.getPosts(mockUser, 1,2, "new", dateFrom, dateTo, null);
+        ResponseEntity responseEntity = postService.getPosts(mockUser, 1,2, "new", null, null, null);
         assertPosts(responseEntity);
     }
 
@@ -112,10 +111,10 @@ public class PostServiceTest {
 
         Page<Post> page = new PageImpl<>(posts, pageable, 2);
 
-        Mockito.when(postRepository.findByTagsNameAndDateTimeBetween(tag, dateFrom, dateTo, pageable))
+        Mockito.when(postRepository.findByTagsName(tag, pageable))
                 .thenReturn(page);
 
-        ResponseEntity responseEntity = postService.getPosts(mockUser, 1,2, "new", dateFrom, dateTo, tag);
+        ResponseEntity responseEntity = postService.getPosts(mockUser, 1,2, "new", null, null, tag);
         assertPosts(responseEntity);
     }
 
